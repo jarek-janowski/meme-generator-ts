@@ -1,12 +1,15 @@
-import {useState, useEffect} from 'react'
+import { useState, useEffect } from 'react';
+import { useHistory, Switch, Route } from 'react-router-dom';
 import './App.css';
 
 const Meme = () => {
-  
 
   const [memes, setMemes] = useState([] as any[])
   const [memeIndex, setMemeIndex] = useState(0);
   const [captions, setCaptions] = useState([] as any)
+
+  const history = useHistory();
+ 
  
   useEffect(() => {
     fetch('https://api.imgflip.com/get_memes')
@@ -14,7 +17,6 @@ const Meme = () => {
     .then(data => {
       const memes = data.data.memes
       setMemes(memes)
-      console.log(memes)
       const randomMemeIndex = Math.floor(Math.random() * memes.length)
       setMemeIndex(randomMemeIndex)
     })
@@ -26,9 +28,6 @@ const Meme = () => {
     }
   }, [memeIndex, memes]);
 
-  useEffect(() => {
-    console.log(captions)
-  }, [captions]);
 
   const updateCaption = (e: React.ChangeEvent<HTMLInputElement>, index: number) => {
     const text = e.target.value || '';
@@ -46,18 +45,20 @@ const Meme = () => {
   const generateMeme = () => {
     const currentMeme = memes[memeIndex];
     const formData = new FormData();
-
+    console.log('formData', formData);
     formData.append('username', 'qwerty935');
+
     formData.append('password', 'qwerty123');
     formData.append('template_id', currentMeme.id);
     captions.forEach((caption: string, index: number) => formData.append(`boxes[${index}][text]`, caption))
+
     fetch('https://api.imgflip.com/caption_image', {
       method: 'POST',
       body: formData
     })
-    .then(res => {res.json()
-    .then(data => {
-      console.log(data);
+    .then(res => {
+      res.json().then(data => {
+      history.push(`/generated?url=${data.data.url}`);
     })
     })
   }
@@ -81,13 +82,25 @@ const Meme = () => {
     : <></>
    );
 }
- 
+
+const MemeGenerated = () => {
+  return(
+    <div>hello</div>
+  )
+}
 
 
 const App = () => {
   return (
     <div className="app">
-      <Meme />
+      <Switch>
+        <Route exact path='/'>
+          <Meme />
+        </Route>
+        <Route path='/generated'>
+          <MemeGenerated />
+        </Route>
+      </Switch>
     </div>
   );
 }
