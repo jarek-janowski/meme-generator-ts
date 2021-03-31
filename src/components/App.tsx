@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
-import { useHistory, Switch, Route } from 'react-router-dom';
+import { useHistory, useLocation, Switch, Route } from 'react-router-dom';
+import { useClipboard } from 'use-clipboard-copy'
 import './App.css';
 
 const Meme = () => {
@@ -28,6 +29,7 @@ const Meme = () => {
     }
   }, [memeIndex, memes]);
 
+  
 
   const updateCaption = (e: React.ChangeEvent<HTMLInputElement>, index: number) => {
     const text = e.target.value || '';
@@ -84,8 +86,30 @@ const Meme = () => {
 }
 
 const MemeGenerated = () => {
+
+  const [copied, setCopied] = useState(false);
+
+  const clipboard = useClipboard();
+  const history = useHistory();
+  const location = useLocation();
+  const url = new URLSearchParams(location.search).get('url')
+
+  const copyLink = () => {
+    clipboard.copy(url);
+    setCopied(true);
+
+  }
+
   return(
-    <div>hello</div>
+    <div>
+      <button onClick={()=> history.push('/')}>
+        Do another meme!
+      </button>
+      { url && <img style={{maxWidth: 500, maxHeight: 500}} src={url} alt="generated meme"/>}
+      <button onClick={copyLink}>
+        {copied ? 'Link copied!' : 'Copy link'}
+      </button>
+    </div>
   )
 }
 
@@ -93,6 +117,7 @@ const MemeGenerated = () => {
 const App = () => {
   return (
     <div className="app">
+      <h1>Meme Creator</h1>
       <Switch>
         <Route exact path='/'>
           <Meme />
