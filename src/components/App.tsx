@@ -33,7 +33,7 @@ const Meme = () => {
   const updateCaption = (e: React.ChangeEvent<HTMLInputElement>, index: number) => {
     const text = e.target.value || '';
     setCaptions(
-      captions.map((caption: [], i: number) =>{
+      captions.map((caption: string, i: number) =>{
         if(index === i){
           return text
         }else {
@@ -43,13 +43,32 @@ const Meme = () => {
     )
   }
 
+  const generateMeme = () => {
+    const currentMeme = memes[memeIndex];
+    const formData = new FormData();
+
+    formData.append('username', 'qwerty935');
+    formData.append('password', 'qwerty123');
+    formData.append('template_id', currentMeme.id);
+    captions.forEach((caption: string, index: number) => formData.append(`boxes[${index}][text]`, caption))
+    fetch('https://api.imgflip.com/caption_image', {
+      method: 'POST',
+      body: formData
+    })
+    .then(res => {res.json()
+    .then(data => {
+      console.log(data);
+    })
+    })
+  }
+
   return ( 
     memes.length
     ?<div className="memes">
-      <button onClick={() => console.log('Generate')}>Generate</button>
+      <button onClick={generateMeme}>Generate</button>
       <button onClick={() => setMemeIndex(memeIndex + 1)}>Skip</button>
       {
-        captions.map((caption: [], index: number) =>(
+        captions.map((caption: string, index: number) =>(
           <input onChange={(e) => updateCaption(e, index)} key={index}/>
         ))
       }
